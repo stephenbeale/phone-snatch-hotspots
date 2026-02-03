@@ -13,15 +13,15 @@ const QUICK_LOCATIONS = [
   { name: 'Shoreditch', lat: 51.5236, lng: -0.0771 },
 ]
 
-function ReportForm({ onSubmit, onCancel }) {
+function ReportForm({ onSubmit, onCancel, pinnedLocation }) {
   const [formData, setFormData] = useState({
-    lat: '',
-    lng: '',
+    lat: pinnedLocation?.lat?.toString() || '',
+    lng: pinnedLocation?.lng?.toString() || '',
     description: '',
     date: new Date().toISOString().split('T')[0],
     time: '',
   })
-  const [selectedLocation, setSelectedLocation] = useState('')
+  const [selectedLocation, setSelectedLocation] = useState(pinnedLocation ? 'Map Pin' : '')
 
   const handleQuickLocation = (location) => {
     setSelectedLocation(location.name)
@@ -57,6 +57,18 @@ function ReportForm({ onSubmit, onCancel }) {
         <p className="form-subtitle">Help others stay safe by reporting incidents</p>
 
         <form onSubmit={handleSubmit}>
+          {pinnedLocation && (
+            <div className="pinned-location-notice">
+              Location selected from map: {pinnedLocation.lat.toFixed(4)}, {pinnedLocation.lng.toFixed(4)}
+            </div>
+          )}
+
+          {!pinnedLocation && (
+            <div className="map-hint">
+              Click anywhere on the map to drop a pin, or select a quick location below.
+            </div>
+          )}
+
           <div className="form-section">
             <label>Quick Location Select:</label>
             <div className="quick-locations">

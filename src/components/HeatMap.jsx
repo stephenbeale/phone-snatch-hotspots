@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { MapContainer, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, useMap, Marker, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet.heat'
 import './HeatMap.css'
@@ -7,6 +7,17 @@ import './HeatMap.css'
 // London center coordinates
 const LONDON_CENTER = [51.5074, -0.1278]
 const DEFAULT_ZOOM = 12
+
+// Custom pin icon for dropped location
+const pinIcon = new L.Icon({
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+})
 
 function HeatLayer({ incidents }) {
   const map = useMap()
@@ -47,7 +58,16 @@ function HeatLayer({ incidents }) {
   return null
 }
 
-function HeatMap({ incidents, onMapClick }) {
+function MapClickHandler({ onMapClick }) {
+  useMapEvents({
+    click: (e) => {
+      onMapClick({ lat: e.latlng.lat, lng: e.latlng.lng })
+    }
+  })
+  return null
+}
+
+function HeatMap({ incidents, onMapClick, selectedLocation }) {
   return (
     <MapContainer
       center={LONDON_CENTER}
@@ -60,6 +80,10 @@ function HeatMap({ incidents, onMapClick }) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <HeatLayer incidents={incidents} />
+      <MapClickHandler onMapClick={onMapClick} />
+      {selectedLocation && (
+        <Marker position={[selectedLocation.lat, selectedLocation.lng]} icon={pinIcon} />
+      )}
     </MapContainer>
   )
 }

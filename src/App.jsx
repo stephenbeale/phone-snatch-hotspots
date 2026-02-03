@@ -27,6 +27,7 @@ function App() {
     return saved ? JSON.parse(saved) : INITIAL_INCIDENTS
   })
   const [showForm, setShowForm] = useState(false)
+  const [pinnedLocation, setPinnedLocation] = useState(null)
 
   useEffect(() => {
     localStorage.setItem('phoneSnatchIncidents', JSON.stringify(incidents))
@@ -35,6 +36,12 @@ function App() {
   const handleReport = (newIncident) => {
     setIncidents(prev => [...prev, { ...newIncident, intensity: 0.8 }])
     setShowForm(false)
+    setPinnedLocation(null)
+  }
+
+  const handleMapClick = (latlng) => {
+    setPinnedLocation(latlng)
+    setShowForm(true)
   }
 
   const totalReports = incidents.length
@@ -51,9 +58,11 @@ function App() {
 
       <main className="main">
         <div className="map-container">
-          <HeatMap incidents={incidents} onMapClick={(latlng) => {
-            setShowForm(true)
-          }} />
+          <HeatMap
+            incidents={incidents}
+            onMapClick={handleMapClick}
+            selectedLocation={pinnedLocation}
+          />
         </div>
 
         <div className="controls">
@@ -68,7 +77,11 @@ function App() {
         {showForm && (
           <ReportForm
             onSubmit={handleReport}
-            onCancel={() => setShowForm(false)}
+            onCancel={() => {
+              setShowForm(false)
+              setPinnedLocation(null)
+            }}
+            pinnedLocation={pinnedLocation}
           />
         )}
       </main>

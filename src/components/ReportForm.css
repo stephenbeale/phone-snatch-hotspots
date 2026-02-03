@@ -35,6 +35,26 @@
   margin-bottom: 1.5rem;
 }
 
+.pinned-location-notice {
+  background: #1e4620;
+  border: 1px solid #2e7d32;
+  color: #81c784;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.map-hint {
+  background: #1a3a5c;
+  border: 1px solid #2a5a8c;
+  color: #7cb3d9;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
 .form-section {
   margin-bottom: 1.5rem;
 }
