@@ -7,3 +7,19 @@
 .leaflet-container {
   background: #1a1a2e;
 }
+
+.heat-map.pinning-mode {
+  cursor: crosshair;
+}
+
+.heat-map.pinning-mode .leaflet-container {
+  cursor: crosshair;
+}
+
+.heat-map.pinning-mode .leaflet-interactive {
+  cursor: crosshair;
+}
+
+.heat-map.pinning-mode .leaflet-grab {
+  cursor: crosshair;
+}
