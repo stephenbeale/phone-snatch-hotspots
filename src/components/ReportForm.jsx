@@ -65,7 +65,7 @@ function ReportForm({ onSubmit, onCancel, pinnedLocation }) {
 
           {!pinnedLocation && (
             <div className="map-hint">
-              Click anywhere on the map to drop a pin, or select a quick location below.
+              Select a quick location below, or cancel and click anywhere on the map to drop a pin.
             </div>
           )}
 
