@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import HeatMap from './components/HeatMap'
 import ReportForm from './components/ReportForm'
+import LocationChoice from './components/LocationChoice'
+import PinConfirm from './components/PinConfirm'
 import './App.css'
 
 // Initial sample data for London phone snatch incidents
@@ -26,22 +28,59 @@ function App() {
     const saved = localStorage.getItem('phoneSnatchIncidents')
     return saved ? JSON.parse(saved) : INITIAL_INCIDENTS
   })
+  const [showChoice, setShowChoice] = useState(false)
   const [showForm, setShowForm] = useState(false)
+  const [isPinningMode, setIsPinningMode] = useState(false)
   const [pinnedLocation, setPinnedLocation] = useState(null)
+  const [showPinConfirm, setShowPinConfirm] = useState(false)
+  const [tempPinLocation, setTempPinLocation] = useState(null)
 
   useEffect(() => {
     localStorage.setItem('phoneSnatchIncidents', JSON.stringify(incidents))
   }, [incidents])
 
+  const resetState = () => {
+    setShowChoice(false)
+    setShowForm(false)
+    setIsPinningMode(false)
+    setPinnedLocation(null)
+    setShowPinConfirm(false)
+    setTempPinLocation(null)
+  }
+
   const handleReport = (newIncident) => {
     setIncidents(prev => [...prev, { ...newIncident, intensity: 0.8 }])
-    setShowForm(false)
-    setPinnedLocation(null)
+    resetState()
+  }
+
+  const handleChoosePin = () => {
+    setShowChoice(false)
+    setIsPinningMode(true)
+  }
+
+  const handleChooseAddress = () => {
+    setShowChoice(false)
+    setShowForm(true)
   }
 
   const handleMapClick = (latlng) => {
-    setPinnedLocation(latlng)
+    if (isPinningMode) {
+      setTempPinLocation(latlng)
+      setShowPinConfirm(true)
+    }
+  }
+
+  const handlePinConfirm = () => {
+    setPinnedLocation(tempPinLocation)
+    setShowPinConfirm(false)
+    setIsPinningMode(false)
     setShowForm(true)
+  }
+
+  const handlePinCancel = () => {
+    setTempPinLocation(null)
+    setShowPinConfirm(false)
+    // Stay in pinning mode so user can try again
   }
 
   const totalReports = incidents.length
@@ -61,26 +100,49 @@ function App() {
           <HeatMap
             incidents={incidents}
             onMapClick={handleMapClick}
-            selectedLocation={pinnedLocation}
+            selectedLocation={tempPinLocation || pinnedLocation}
+            isPinningMode={isPinningMode}
           />
         </div>
 
-        <div className="controls">
-          <button
-            className="report-btn"
-            onClick={() => setShowForm(!showForm)}
-          >
-            {showForm ? 'Cancel' : 'Report Incident'}
-          </button>
-        </div>
+        {isPinningMode && (
+          <div className="pinning-hint">
+            Click on the map to drop a pin at the incident location
+            <button className="pinning-cancel" onClick={resetState}>Cancel</button>
+          </div>
+        )}
+
+        {!isPinningMode && !showChoice && !showForm && (
+          <div className="controls">
+            <button
+              className="report-btn"
+              onClick={() => setShowChoice(true)}
+            >
+              Report Incident
+            </button>
+          </div>
+        )}
+
+        {showChoice && (
+          <LocationChoice
+            onChoosePin={handleChoosePin}
+            onChooseAddress={handleChooseAddress}
+            onCancel={resetState}
+          />
+        )}
+
+        {showPinConfirm && tempPinLocation && (
+          <PinConfirm
+            location={tempPinLocation}
+            onConfirm={handlePinConfirm}
+            onCancel={handlePinCancel}
+          />
+        )}
 
         {showForm && (
           <ReportForm
             onSubmit={handleReport}
-            onCancel={() => {
-              setShowForm(false)
-              setPinnedLocation(null)
-            }}
+            onCancel={resetState}
             pinnedLocation={pinnedLocation}
           />
         )}

@@ -58,21 +58,25 @@ function HeatLayer({ incidents }) {
   return null
 }
 
-function MapClickHandler({ onMapClick }) {
+function MapClickHandler({ onMapClick, isPinningMode }) {
   useMapEvents({
     click: (e) => {
-      onMapClick({ lat: e.latlng.lat, lng: e.latlng.lng })
+      if (isPinningMode && onMapClick) {
+        onMapClick({ lat: e.latlng.lat, lng: e.latlng.lng })
+      }
     }
   })
   return null
 }
 
-function HeatMap({ incidents, onMapClick, selectedLocation }) {
+function HeatMap({ incidents, onMapClick, selectedLocation, isPinningMode }) {
+  const mapClassName = isPinningMode ? 'heat-map pinning-mode' : 'heat-map'
+
   return (
     <MapContainer
       center={LONDON_CENTER}
       zoom={DEFAULT_ZOOM}
-      className="heat-map"
+      className={mapClassName}
       scrollWheelZoom={true}
     >
       <TileLayer
@@ -80,7 +84,7 @@ function HeatMap({ incidents, onMapClick, selectedLocation }) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <HeatLayer incidents={incidents} />
-      <MapClickHandler onMapClick={onMapClick} />
+      <MapClickHandler onMapClick={onMapClick} isPinningMode={isPinningMode} />
       {selectedLocation && (
         <Marker position={[selectedLocation.lat, selectedLocation.lng]} icon={pinIcon} />
       )}
