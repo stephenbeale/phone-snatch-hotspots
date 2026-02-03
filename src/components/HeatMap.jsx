@@ -35,9 +35,10 @@ function HeatLayer({ incidents }) {
     ])
 
     heatLayerRef.current = L.heatLayer(heatData, {
-      radius: 25,
-      blur: 15,
-      maxZoom: 17,
+      radius: 35,
+      blur: 20,
+      maxZoom: 10,
+      minOpacity: 0.4,
       max: 1.0,
       gradient: {
         0.0: '#0000ff',
