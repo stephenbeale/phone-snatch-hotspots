@@ -2,7 +2,7 @@
 
 ## Bugs
 
-- [ ] **Form obscures map after pin drop** - After clicking on the map to drop a pin, the Report Form card covers the entire screen including the map. Users should be able to see their pin location while filling out the form. Consider: side panel layout, smaller modal, or transparent/semi-transparent background showing the map.
+- [x] **Form obscures map after pin drop** - ~~After clicking on the map to drop a pin, the Report Form card covers the entire screen including the map.~~ Fixed: Form now slides in as a side panel (desktop) or bottom sheet (mobile), keeping the map and pin visible.
 
 ## Features
 
