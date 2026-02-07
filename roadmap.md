@@ -6,7 +6,9 @@
 
 ## Features
 
-- [ ] **Address geocoding** - When user selects "Enter Address", implement actual address lookup using a geocoding API (e.g., Nominatim, Google Places) to convert street addresses/postcodes to coordinates.
+- [x] **Address geocoding** - ~~When user selects "Enter Address", implement actual address lookup.~~ Fixed: Uses Nominatim (OpenStreetMap) API with debounced search, London-bounded results, and dropdown selection.
+
+- [ ] **Latest submissions overlay** - Add a toggleable text view overlay showing the most recent incident submissions (location, date, time, description).
 
 - [ ] **Incident details view** - Allow users to click on hotspots to see details of reported incidents (date, time, description).
 

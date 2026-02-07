@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import './ReportForm.css'
 
 // Common London locations for quick selection
@@ -22,9 +22,16 @@ function ReportForm({ onSubmit, onCancel, pinnedLocation }) {
     time: '',
   })
   const [selectedLocation, setSelectedLocation] = useState(pinnedLocation ? 'Map Pin' : '')
+  const [addressQuery, setAddressQuery] = useState('')
+  const [addressResults, setAddressResults] = useState([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchError, setSearchError] = useState('')
+  const searchTimeout = useRef(null)
 
   const handleQuickLocation = (location) => {
     setSelectedLocation(location.name)
+    setAddressQuery('')
+    setAddressResults([])
     setFormData(prev => ({
       ...prev,
       lat: location.lat.toString(),
@@ -32,11 +39,64 @@ function ReportForm({ onSubmit, onCancel, pinnedLocation }) {
     }))
   }
 
+  const handleAddressSearch = (query) => {
+    setAddressQuery(query)
+    setSearchError('')
+
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current)
+    }
+
+    if (query.length < 3) {
+      setAddressResults([])
+      return
+    }
+
+    searchTimeout.current = setTimeout(async () => {
+      setIsSearching(true)
+      try {
+        const params = new URLSearchParams({
+          q: query,
+          format: 'json',
+          addressdetails: '1',
+          limit: '5',
+          countrycodes: 'gb',
+          viewbox: '-0.5103,51.2868,0.3340,51.6919',
+          bounded: '1',
+        })
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?${params}`,
+          { headers: { 'Accept-Language': 'en' } }
+        )
+        const data = await response.json()
+        setAddressResults(data)
+        if (data.length === 0) {
+          setSearchError('No results found. Try a different search.')
+        }
+      } catch {
+        setSearchError('Search failed. Check your connection.')
+      } finally {
+        setIsSearching(false)
+      }
+    }, 400)
+  }
+
+  const handleAddressSelect = (result) => {
+    setSelectedLocation(result.display_name.split(',')[0])
+    setAddressQuery(result.display_name)
+    setAddressResults([])
+    setFormData(prev => ({
+      ...prev,
+      lat: result.lat,
+      lng: result.lon,
+    }))
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
 
     if (!formData.lat || !formData.lng) {
-      alert('Please select a location or enter coordinates')
+      alert('Please select a location or search for an address')
       return
     }
 
@@ -63,46 +123,58 @@ function ReportForm({ onSubmit, onCancel, pinnedLocation }) {
             </div>
           )}
 
-          <div className="form-section">
-            <label>Quick Location Select:</label>
-            <div className="quick-locations">
-              {QUICK_LOCATIONS.map(loc => (
-                <button
-                  key={loc.name}
-                  type="button"
-                  className={`quick-loc-btn ${selectedLocation === loc.name ? 'selected' : ''}`}
-                  onClick={() => handleQuickLocation(loc)}
-                >
-                  {loc.name}
-                </button>
-              ))}
-            </div>
-          </div>
+          {!pinnedLocation && (
+            <>
+              <div className="form-group">
+                <label htmlFor="address">Search Address</label>
+                <div className="address-search-wrapper">
+                  <input
+                    type="text"
+                    id="address"
+                    value={addressQuery}
+                    onChange={(e) => handleAddressSearch(e.target.value)}
+                    placeholder="e.g., Oxford Circus, London SW1..."
+                    autoComplete="off"
+                  />
+                  {isSearching && <span className="search-spinner" />}
+                </div>
+                {searchError && <p className="search-error">{searchError}</p>}
+                {addressResults.length > 0 && (
+                  <ul className="address-results">
+                    {addressResults.map(result => (
+                      <li key={result.place_id}>
+                        <button type="button" onClick={() => handleAddressSelect(result)}>
+                          {result.display_name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="lat">Latitude</label>
-              <input
-                type="number"
-                id="lat"
-                step="any"
-                value={formData.lat}
-                onChange={(e) => setFormData(prev => ({ ...prev, lat: e.target.value }))}
-                placeholder="e.g., 51.5074"
-              />
+              <div className="form-section">
+                <label>Or quick select:</label>
+                <div className="quick-locations">
+                  {QUICK_LOCATIONS.map(loc => (
+                    <button
+                      key={loc.name}
+                      type="button"
+                      className={`quick-loc-btn ${selectedLocation === loc.name ? 'selected' : ''}`}
+                      onClick={() => handleQuickLocation(loc)}
+                    >
+                      {loc.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {selectedLocation && (
+            <div className="selected-location-label">
+              Selected: {selectedLocation}
             </div>
-            <div className="form-group">
-              <label htmlFor="lng">Longitude</label>
-              <input
-                type="number"
-                id="lng"
-                step="any"
-                value={formData.lng}
-                onChange={(e) => setFormData(prev => ({ ...prev, lng: e.target.value }))}
-                placeholder="e.g., -0.1278"
-              />
-            </div>
-          </div>
+          )}
 
           <div className="form-row">
             <div className="form-group">
